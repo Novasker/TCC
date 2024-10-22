@@ -7,16 +7,17 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 
-<Pane fx:id="pane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="480.0" prefWidth="680.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.projeto.teste.Controller">
+<Pane fx:id="pane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.projeto.teste.Controller">
    <children>
-      <HBox fx:id="hbox" prefHeight="420.0" prefWidth="680.0" />
-      <Button fx:id="button" layoutX="226.0" layoutY="432.0" mnemonicParsing="false" onAction="#start" prefHeight="25.0" prefWidth="65.0" text="Iniciar" />
-      <RadioButton fx:id="bubble" layoutX="14.0" layoutY="436.0" mnemonicParsing="false" selected="true" text="Bubble Sort">
+      <HBox fx:id="hbox" prefHeight="600.0" prefWidth="670.0" />
+      <Button fx:id="initButton" layoutX="753.0" layoutY="87.0" mnemonicParsing="false" onAction="#start" prefHeight="25.0" prefWidth="65.0" text="Iniciar" />
+      <RadioButton fx:id="bubble" layoutX="842.0" layoutY="52.0" mnemonicParsing="false" selected="true" text="Bubble Sort">
          <toggleGroup>
             <ToggleGroup fx:id="sort" />
          </toggleGroup>
       </RadioButton>
-      <RadioButton fx:id="merge" layoutX="113.0" layoutY="436.0" mnemonicParsing="false" text="Selection Sort" toggleGroup="$sort" />
-      <TextField fx:id="inputField" layoutX="312.0" layoutY="432.0" prefHeight="25.0" prefWidth="352.0" />
+      <RadioButton fx:id="merge" layoutX="691.0" layoutY="52.0" mnemonicParsing="false" text="Selection Sort" toggleGroup="$sort" />
+      <TextField fx:id="textField" layoutX="680.0" layoutY="14.0" prefHeight="25.0" prefWidth="299.0" />
+      <Button fx:id="pauseButton" layoutX="842.0" layoutY="87.0" mnemonicParsing="false" text="Pausar" />
    </children>
 </Pane>

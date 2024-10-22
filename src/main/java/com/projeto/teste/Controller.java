@@ -21,15 +21,15 @@ public class Controller {
     @FXML
     private RadioButton merge;
     @FXML
-    private TextField inputField;
+    private TextField textField;
 
-    private static int NUM_RECTANGLES;
-    private static int RECTANGLE_WIDTH = 49;
-    private static int RECTANGLE_HEIGHT_FACTOR = 20;
+    private static final int RECTANGLE_WIDTH = 49;
+    private static final int RECTANGLE_STROKE = 1;
+    private static final int RECTANGLE_HEIGHT_FACTOR = 20;
+    private int numRectangles;
 
-    public static void setNumRectangles(int numRectangles) {
-        NUM_RECTANGLES = numRectangles;
-    }
+    private SequentialTransition sequentialTransition;
+    private boolean isPaused = false;
 
     @FXML
     private void initialize() {
@@ -39,60 +39,71 @@ public class Controller {
     @FXML
     private void start() {
         hbox.getChildren().clear();
+        int[] heights = getHeights();
 
-        int[] heights;
-        if (inputField.getText().isEmpty()) {
-            setNumRectangles(13);
-            heights = new int[NUM_RECTANGLES];
-            for (int i = 0; i < NUM_RECTANGLES; i++) {
-                heights[i] = (int) (Math.random() * RECTANGLE_HEIGHT_FACTOR) + 1;
-            }
-            List<StackPane> stackPanes = createStackPanes(heights);
-            if (bubble.isSelected()) {
-                bubbleSortAnimation(stackPanes);
-            } else if (merge.isSelected()) {
-                selectionSortAnimation(stackPanes);
-            }
-        } else {
-            String input = inputField.getText();
-            String[] numbers = input.split(",");
-            heights = new int[numbers.length];
-            for (int i = 0; i < numbers.length; i++) {
-                heights[i] = Integer.parseInt(numbers[i].trim());
-            }
-            setNumRectangles(numbers.length);
-            List<StackPane> stackPanes = createStackPanes(heights);
-            if (bubble.isSelected()) {
-                bubbleSortAnimation(stackPanes);
-            } else if (merge.isSelected()) {
-                selectionSortAnimation(stackPanes);
-            }
+        List<StackPane> stackPanes = createStackPanes(heights);
+        hbox.getChildren().addAll(stackPanes);
+        if (bubble.isSelected()) {
+            bubbleSortAnimation(stackPanes);
         }
+    }
+    @FXML
+    private void pause(){
+        if (isPaused) {
+            sequentialTransition.play(); // Retorna a animação ao estado normal
+            isPaused = false;
+        } else {
+            sequentialTransition.pause(); // Pausa a animação
+            isPaused = true;
+        }
+    }
 
+    private int[] getHeights() {
+        if (textField.getText().isEmpty()) {
+            numRectangles = 13;
+            return generateRandomHeights(numRectangles);
+        } else {
+            return parseHeightsFromInput(textField.getText());
+        }
+    }
+
+    private int[] generateRandomHeights(int numRectangles) {
+        int[] heights = new int[numRectangles];
+        for (int i = 0; i < numRectangles; i++) {
+            heights[i] = (int) (Math.random() * RECTANGLE_HEIGHT_FACTOR) + 1;
+        }
+        return heights;
+    }
+
+    private int[] parseHeightsFromInput(String input) {
+        String[] numbers = input.split(",");
+        numRectangles = numbers.length;
+        int[] heights = new int[numRectangles];
+        for (int i = 0; i < numRectangles; i++) {
+            heights[i] = Integer.parseInt(numbers[i].trim());
+        }
+        return heights;
     }
 
     private List<StackPane> createStackPanes(int[] heights) {
         List<StackPane> stackPanes = new ArrayList<>();
-        for (int i = 0; i < NUM_RECTANGLES; i++) {
+        for (int height : heights) {
             StackPane stackPane = new StackPane();
-            Rectangle rectangle = new Rectangle(RECTANGLE_WIDTH, heights[i] * RECTANGLE_HEIGHT_FACTOR);
+            Rectangle rectangle = new Rectangle(RECTANGLE_WIDTH, height * RECTANGLE_HEIGHT_FACTOR);
             rectangle.setFill(Color.BLUE);
             rectangle.setStroke(Color.BLACK);
             rectangle.setStrokeWidth(1);
 
-            Text text = new Text(String.valueOf(heights[i]));
+            Text text = new Text(String.valueOf(height));
             text.setFill(Color.WHITE);
 
             stackPane.getChildren().addAll(rectangle, text);
-            hbox.getChildren().add(stackPane);
-
             stackPanes.add(stackPane);
         }
         return stackPanes;
     }
-
     private void bubbleSortAnimation(List<StackPane> stackPanes) {
-        SequentialTransition seqTransition = new SequentialTransition();
+        this.sequentialTransition = new SequentialTransition();
 
         boolean swapped;
         do {
@@ -101,7 +112,7 @@ public class Controller {
                 Text text1 = (Text) stackPanes.get(i).getChildren().get(1);
                 Text text2 = (Text) stackPanes.get(i + 1).getChildren().get(1);
                 if (Integer.parseInt(text1.getText()) > Integer.parseInt(text2.getText())) {
-                    swapWithAnimation(stackPanes.get(i), stackPanes.get(i + 1), seqTransition);
+                    swapWithAnimation(stackPanes, i, i + 1);
                     Collections.swap(stackPanes, i, i + 1);
                     swapped = true;
                 }
@@ -118,49 +129,25 @@ public class Controller {
             });
         });
 
-        seqTransition.setOnFinished(event -> pauseTransition.play());
-        seqTransition.play();
+        sequentialTransition.setOnFinished(event -> pauseTransition.play());
+        sequentialTransition.play();
     }
 
-    private void swapWithAnimation(StackPane pane1, StackPane pane2, SequentialTransition seqTransition) {
-        TranslateTransition transition1 = new TranslateTransition(Duration.seconds(0.5), pane1);
-        transition1.setByX(50);
-        TranslateTransition transition2 = new TranslateTransition(Duration.seconds(0.5), pane2);
-        transition2.setByX(-50);
-
-        seqTransition.getChildren().addAll(transition1, transition2);
-    }
-
-    private void selectionSortAnimation(List<StackPane> stackPanes) {
-        SequentialTransition seqTransition = new SequentialTransition();
-
-        for (int i = 0; i < stackPanes.size() - 1; i++) {
-            int minIndex = i;
-            for (int j = i + 1; j < stackPanes.size(); j++) {
-                Text text1 = (Text) stackPanes.get(j).getChildren().get(1);
-                Text text2 = (Text) stackPanes.get(minIndex).getChildren().get(1);
-                if (Integer.parseInt(text1.getText()) < Integer.parseInt(text2.getText())) {
-                    minIndex = j;
-                }
-            }
-            if (minIndex != i) {
-                swapWithAnimation(stackPanes, i, minIndex, seqTransition);
-                Collections.swap(stackPanes, i, minIndex);
-            }
-        }
-
-        seqTransition.play();
-    }
-
-    private void swapWithAnimation(List<StackPane> stackPanes, int index1, int index2, SequentialTransition seqTransition) {
+    private void swapWithAnimation(List<StackPane> stackPanes, int index1, int index2) {
         StackPane pane1 = stackPanes.get(index1);
         StackPane pane2 = stackPanes.get(index2);
 
+        // Define as transições
         TranslateTransition transition1 = new TranslateTransition(Duration.seconds(0.5), pane1);
-        transition1.setByX(50 * (index2 - index1));
-        TranslateTransition transition2 = new TranslateTransition(Duration.seconds(0.5), pane2);
-        transition2.setByX(-50 * (index2 - index1));
+        transition1.setByX(RECTANGLE_WIDTH + 1);
 
-        seqTransition.getChildren().addAll(transition1, transition2);
+        TranslateTransition transition2 = new TranslateTransition(Duration.seconds(0.5), pane2);
+        transition2.setByX(-(RECTANGLE_WIDTH + 1));
+
+        // Adiciona ao seqTransition
+        ParallelTransition parallelTransition = new ParallelTransition(transition1,transition2);
+        sequentialTransition.getChildren().addAll(parallelTransition);
     }
+
 }
+
